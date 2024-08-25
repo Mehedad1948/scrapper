@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
 const fs = require('fs');
 
 async function listing(page) {
- 
+
 
     await page.goto('https://greatfalls.craigslist.org/search/trp#search=1~list~0~0', { waitUntil: 'networkidle2' });
 
@@ -29,14 +29,17 @@ async function listing(page) {
 }
 
 async function jobDescriptions(list, page) {
-    
-    for(var i= 0; i< list.length; i++) {
-        console.log('🦩🦩',list[i].link);
-        
-        await page.goto(list[i].link)
 
+    for (var i = 0; i < list.length; i++) {
+
+        await page.goto(list[i].link)
+        await sleep(1000)
         const html = await page.content()
     }
+}
+
+async function sleep(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
 async function main() {
