@@ -1,20 +1,11 @@
-const request = require('request-promise')
-const cheerio = require('cheerio')
-const fs = require('fs')
+const puppeteer = require('puppeteer')
 
-async function main(params) {
-    const html = await request.get('https://www.javatpoint.com/html-table')
-    fs.writeFileSync('./test.html', html)
-    const $ = await cheerio.load(html)
-    const title = $('title').text()
+async function main() {
+    const browser = await puppeteer.launch({ executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', headless: false });
 
-    $('table tr').each((index, element) => {
-        const tds = $(element).find('td')
-        const content = $(tds[0]).text()
-        console.log('🔥', content);
-    });
-
-
+    const page = await browser.newPage()
+    await page.goto('https://pptr.dev/guides/configuration')
 }
+
 
 main()
