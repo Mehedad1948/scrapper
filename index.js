@@ -28,15 +28,45 @@ async function listing(page) {
     return data
 }
 
+
 async function jobDescriptions(list, page) {
-
+    const newList = [];
     for (var i = 0; i < list.length; i++) {
+        if (i === 2) {
+            break
+        }
+        await page.goto(list[i].link);
+        sleep(1000)
 
-        await page.goto(list[i].link)
-        await sleep(1000)
-        const html = await page.content()
+        const description = await page.evaluate(() => {
+            const scriptTag = document.querySelector('script[type="application/ld+json"]#ld_posting_data');
+            if (scriptTag) {
+                const jsonData = JSON.parse(scriptTag.innerText);
+                return jsonData.description || 'No description available';
+            } else {
+                return 'No JSON-LD script found';
+            }
+        });
+
+        // Clean the HTML tags from the description if needed
+        const cleanDescription = await page.evaluate(description => {
+            const div = document.createElement('div');
+            div.innerHTML = description;
+            return div.innerText;
+        }, description);
+
+        // Add the clean description to the corresponding item in the list
+        const newItem = {
+            ...list[i], // Spread the existing properties of the list item
+            description: cleanDescription.trim() // Add the description field
+        };
+
+        // Add the new item to the newList
+        newList.push(newItem);
     }
+    return newList
 }
+
 
 async function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
@@ -53,6 +83,8 @@ async function main() {
     const list = await listing(page)
     const listWithJobDescription = await jobDescriptions(list, page)
     // await browser.close();
+    console.log(listWithJobDescription);
+
 }
 
 main();
