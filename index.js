@@ -2,8 +2,17 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
+const mongoose = require('mongoose')
+const Listing = require('./models/Listing')
+
+
 const cheerio = require('cheerio');
 const fs = require('fs');
+
+async function connectToMongoose() {
+    await mongoose.connect(`mongodb+srv://scram:ChJRinDOvo6elnZB@cluster0.divun.mongodb.net/`)
+    console.log('🚀 Connected to mogoDB',);
+}
 
 async function listing(page) {
 
@@ -46,8 +55,11 @@ async function jobDescriptions(list, page) {
             compensation
         }
         newList.push(newItem)
-
-        await sleep(1000)
+        console.time('mongo')
+        const listingModel = new Listing(newItem)
+        await listingModel.save()
+        console.timeEnd('mongo')
+        
     }
 
     return newList
@@ -58,6 +70,7 @@ async function sleep(milliseconds) {
 }
 
 async function main() {
+    await connectToMongoose()
     const browser = await puppeteer.launch({
         executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         headless: false,
@@ -67,9 +80,11 @@ async function main() {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36');
     const list = await listing(page)
     const listWithJobDescription = await jobDescriptions(list, page)
-    // await browser.close();
+    await browser.close();
     console.log(listWithJobDescription);
 
 }
 
 main();
+
+// ChJRinDOvo6elnZB
